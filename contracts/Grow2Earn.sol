@@ -38,7 +38,7 @@ contract Grow2Earn is ERC721URIStorage {
             bytes(
                 string(
                     abi.encodePacked(
-                        '{',
+                        "{",
                         baseURI,
                         ', "image": "',
                         imageURI,
@@ -60,16 +60,18 @@ contract Grow2Earn is ERC721URIStorage {
     ) public {
         // mint a new NFT having metadata with imageURI (image path) and animationURI (3D model path)
         uint256 newtokenId = _tokenIds.current();
-        string memory newBaseURI = string(abi.encodePacked(
-            '"name": "',
-            name,
-            '", "description": "',
-            description,
-            '"'
-        ));
+        string memory newBaseURI = string(
+            abi.encodePacked(
+                '"name": "',
+                name,
+                '", "description": "',
+                description,
+                '"'
+            )
+        );
         string memory newTokenURI = makeTokenURI(
             imageURI,
-            animationURI, 
+            animationURI,
             newBaseURI
         );
         _safeMint(msg.sender, newtokenId);
@@ -101,7 +103,10 @@ contract Grow2Earn is ERC721URIStorage {
             "Only minter can update metadata"
         );
         require(isValid[tokenId], "Token is invalid");
-        _setTokenURI(tokenId, makeTokenURI(imageURI, animationURI, baseURIs[tokenId]));
+        _setTokenURI(
+            tokenId,
+            makeTokenURI(imageURI, animationURI, baseURIs[tokenId])
+        );
         record[tokenId].push(Record(imageURI, animationURI, block.timestamp));
         emit TokenURIUpdated(msg.sender, tokenId);
     }
@@ -121,7 +126,7 @@ contract Grow2Earn is ERC721URIStorage {
             tokenId,
             makeTokenURI(
                 record[tokenId][index].imageURI,
-                record[tokenId][index].animationURI, 
+                record[tokenId][index].animationURI,
                 baseURIs[tokenId]
             )
         );
@@ -135,6 +140,16 @@ contract Grow2Earn is ERC721URIStorage {
         require(isValid[tokenId], "Token is invalid");
         isValid[tokenId] = false;
         emit TokenURIRedeemed(msg.sender, tokenId);
+    }
+
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal view override {
+        // mintは許可（そのまま処理を通す）
+        // transferは禁止（処理を中断させる）
+        require(from == address(0) || isValid[tokenId], "blocked transfer");
     }
 
     function getIsValid(uint256 tokenId) public view returns (bool) {

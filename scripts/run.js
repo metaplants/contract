@@ -1,5 +1,5 @@
 const main = async () => {
-  const [owner, addr1] = await hre.ethers.getSigners();
+  const [owner, addr1, addr2] = await hre.ethers.getSigners();
   console.log("owner: ", owner.address);
   console.log("addr1: ", addr1.address);
   const nftContractFactory = await hre.ethers.getContractFactory("Grow2Earn");
@@ -20,12 +20,12 @@ const main = async () => {
   txn = await nftContract.getRecord(0);
   console.log(txn);
   txn = await nftContract.connect(addr1).switchTokenURI(0,1);
-  console.log(txn);
   txn = await nftContract.tokenURI(0);
   console.log(txn);
-  txn = await nftContract.connect(addr1).redeem(0);
+  txn = await nftContract.connect(addr1).transferFrom(addr1.address, addr2.address, 0);
+  txn = await nftContract.connect(addr2).redeem(0);
+  txn = await nftContract.connect(addr2).transferFrom(addr2.address, addr1.address, 0);
   await txn.wait();
-  
 };
 
 const runMain = async () => {
